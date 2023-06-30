@@ -1,5 +1,10 @@
 import styled from '@emotion/styled';
 
+export const Wrapper = styled.div`
+  padding: 10px;
+  display: flex;
+`;
+
 export const Label = styled.label`
   padding: 10px;
   display: flex;
