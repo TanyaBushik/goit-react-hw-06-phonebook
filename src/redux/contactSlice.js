@@ -27,8 +27,13 @@ export const contactsSlice = createSlice({
     },
   },
 
-  deleteContact: (state, action) => {
-    state.list = state.list.filter(contact => contact.id !== action.payload);
+  // deleteContact: (state, action) => {
+  //   state.list = state.list.filter(contact => contact.id !== action.payload);
+  // },
+  deleteContact: {
+    reducer: (state, action) => {
+      state.list = state.list.filter(contact => contact.id !== action.payload);
+    },
   },
 });
 

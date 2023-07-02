@@ -1,76 +1,110 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.min.css';
+import * as Yup from 'yup';
 import {
-  Form,
-  NameInput,
-  NumberInput,
-  LabelName,
-  LabelNumber,
-  AddBtn,
+  Container,
+  Input,
+  Label,
+  Wrapper,
+  ErrorMsg,
+  Btn,
 } from './ContactForm.styled';
+import { useDispatch, useSelector } from 'react-redux';
+import { getContacts } from 'redux/selector';
+import { Formik } from 'formik';
+import { nanoid } from '@reduxjs/toolkit';
+import { addContact } from 'redux/contactSlice';
 
-const ContactForm = ({ onAdd }) => {
-  const [name, setName] = useState('');
-  const [number, setNumber] = useState('');
+const schema = Yup.object().shape({
+  name: Yup.string().min(2).max(70).required(),
+  number: Yup.number().min(4).required(),
+});
 
-  const handleSubmit = e => {
-    e.preventDefault();
+const initialValues = {
+  id: '',
+  name: '',
+  number: '',
+};
 
-    onAdd(name, number);
-    setName('');
-    setNumber('');
-  };
+export const ContactForm = () => {
+  const dispatch = useDispatch();
+  const contacts = useSelector(getContacts);
 
-  // const handleNameChange = e => {
-  //   setName(e.currentTarget.value);
-  // };
-  // const handleNumberChange = e => {
-  //   setNumber(e.currentTarget.value);
-  // };
+  const handleSubmit = (values, { resetForm }) => {
+    const newContact = {
+      id: nanoid(),
+      name: values.name,
+      number: values.number,
+    };
 
-  const handleInputChange = e => {
-    const { name, value } = e.currentTarget;
-    name === 'name' ? setName(value) : setNumber(value);
+    if (contacts.find(contact => contact.id === newContact.name)) {
+      return toast.error(`${newContact.name} is already in contacts.`);
+    }
+
+    dispatch(addContact(newContact));
+    resetForm();
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <LabelName>
-        Name
-        <NameInput
-          type="text"
-          name="name"
-          pattern="^[a-zA-Zа-яА-Я]+((['
-            -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
-          title="Name may contain only
-            letters, apostrophe, dash and spaces. For example Adrian, Jacob
-            Mercer, Charles de Batz de Castelmore d'Artagnan"
-          required
-          value={name}
-          onChange={handleInputChange}
-        ></NameInput>
-      </LabelName>
+    <>
+      <Formik
+        initialValues={initialValues}
+        onSubmit={handleSubmit}
+        validationSchema={schema}
+      >
+        <Container>
+          <Wrapper>
+            <Label htmlFor="name">Name:</Label>
+            <Input name="name" type="text" id="name" />
+            <ErrorMsg name="name" component="div" />
+          </Wrapper>
 
-      <LabelNumber>
-        Number
-        <NumberInput
-          type="tel"
-          name="number"
-          pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
-          title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
-          required
-          value={number}
-          onChange={handleInputChange}
-        ></NumberInput>
-      </LabelNumber>
+          <Wrapper>
+            <Label htmlFor="number">Number:</Label>
+            <Input name="number" type="tel" id="number" />
+            <ErrorMsg name="number" component="div" />
+          </Wrapper>
 
-      <AddBtn type="submit">Add Contact</AddBtn>
-    </Form>
+          <Btn type="submit">Add contact</Btn>
+        </Container>
+      </Formik>
+      <ToastContainer />
+    </>
   );
-};
 
-ContactForm.propTypes = {
-  onAdd: PropTypes.func.isRequired,
-};
+  // return (
+  //   <Form onSubmit={handleSubmit}>
+  //     <LabelName>
+  //       Name
+  //       <NameInput
+  //         type="text"
+  //         name="name"
+  //         pattern="^[a-zA-Zа-яА-Я]+((['
+  //           -][a-zA-Zа-яА-Я ])?[a-zA-Zа-яА-Я]*)*$"
+  //         title="Name may contain only
+  //           letters, apostrophe, dash and spaces. For example Adrian, Jacob
+  //           Mercer, Charles de Batz de Castelmore d'Artagnan"
+  //         required
+  //         value={contacts.name}
+  //         // onChange={handleInputChange}
+  //       ></NameInput>
+  //     </LabelName>
 
-export default ContactForm;
+  //     <LabelNumber>
+  //       Number
+  //       <NumberInput
+  //         type="tel"
+  //         name="number"
+  //         pattern="\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}"
+  //         title="Phone number must be digits and can contain spaces, dashes, parentheses and can start with +"
+  //         required
+  //         value={contacts.value}
+  //         // onChange={handleInputChange}
+  //       ></NumberInput>
+  //     </LabelNumber>
+
+  //     <AddBtn type="submit">Add Contact</AddBtn>
+  //     <ToastContainer />
+  //   </Form>
+  // );
+};
